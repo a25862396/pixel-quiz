@@ -48,22 +48,50 @@
 
 ## 部署至 GitHub Pages
 
+> **重要前提：** GitHub Actions 僅負責自動編譯與發佈前端程式碼。游戲後端（題目、分數記錄）需透過 **Google Apps Script** 來達成，請务必先完成上方「 Google Sheets 與 Apps Script 設定」章節再進行以下步驟。
+
 本專案已設定 GitHub Actions，只要將程式碼推送到 GitHub，系統就會自動編譯並部署到 GitHub Pages。
 
-### 操作步驟：
-1. **建立 GitHub 專案並上傳程式碼**：
-   - 在 GitHub 建立一個全新的 Repository。
-   - 將本專案的程式碼 `git push` 上去。
-2. **設定 Secrets 環境變數**：
-   - 進入您的 GitHub Repository 頁面，點選上方的 **Settings**。
-   - 點開左側選單的 **Secrets and variables** > **Actions**。
-   - 點擊綠色的 **New repository secret**，依序新增以下三個變數（數值請對應您在本機 `.env` 的設定）：
-     - `VITE_GOOGLE_APP_SCRIPT_URL`：(填入 Google Apps Script 網址)
-     - `VITE_PASS_THRESHOLD`：(填入過關門檻，例如 3)
-     - `VITE_QUESTION_COUNT`：(填入抽題數量，例如 5)
-3. **開啟 GitHub Pages 權限設定**：
-   - 回到 **Settings**，點選左側選單的 **Actions** > **General**。
-   - 捲到最下方的 **Workflow permissions**，選擇 **Read and write permissions**，然後點擊 **Save**。
-4. **確認部署**：
-   - 點選上方頁籤的 **Actions**，您會看到 `Deploy to GitHub Pages` 的流程正在執行。
-   - 等待綠色打勾後，進入 **Settings** > **Pages**，就能看到您的公開網頁網址了！
+### 完整操作順序（建議依照此順序執行）：
+
+#### 步驟 1：先完成 Google 後端設定
+請先回到本文件上方的「 Google Sheets 與 Apps Script 設定」章節，從「1. 建立 Google 試算表」開始依序完成所有設定。**重點：最後一定要拿到 Google Apps Script 的「網頁應用程式網址」(Web App URL)**。
+
+#### 步驟 2：建立 GitHub Repository 並上傳程式碼
+1. 在 GitHub 建立一個全新的 Repository（公開 Public）。
+2. 將本專案的程式碼 `git push` 上去。
+
+#### 步驟 3：在 GitHub 設定 Secrets 環境變數
+**.env 檔案不能上傳到 GitHub（已設定在 .gitignore），因此必須將三個機密變數暫時存入 GitHub Secrets：**
+1. 進入您的 GitHub Repository 頁面，點選上方的 **Settings**。
+2. 點開左側選單的 **Secrets and variables** > **Actions**。
+3. 點擊綠色的 **New repository secret**，依序新增以下三個變數：
+
+   | Secret 名稱 | 內容 |
+   |---|---|
+   | `VITE_GOOGLE_APP_SCRIPT_URL` | 步驟 1 拿到的 Google Apps Script 網址 |
+   | `VITE_PASS_THRESHOLD` | 過關門檻，例如：`3` |
+   | `VITE_QUESTION_COUNT` | 每次抽題數量，例如：`5` |
+
+#### 步驟 4：開啟 GitHub Pages 部署權限
+1. 點選 **Settings** > **Actions** > **General**。
+2. 溻到最下方的 **Workflow permissions**，選擇 **Read and write permissions**，點擊 **Save**。
+3. 點選 **Settings** > **Pages** > **Source**，將下拉選單改為 **`GitHub Actions`**。
+
+#### 步驟 5：觸發自動部署
+1. 回到您的終端機，進行任意一次 commit 並推播：
+   ```bash
+   git add .
+   git commit -m "Trigger deployment"
+   git push
+   ```
+2. 點選 GitHub 上方頁籤的 **Actions**，就會看到 `Deploy to GitHub Pages` 的流程正在執行。
+3. 等待綠色打勾後，進入 **Settings** > **Pages**，就能看到您的公開網頁網址！
+
+### 後端達不到時的排查方式
+
+若網頁展示小次數永遠為 0 或這統計沒有寫入，請依照以下清單檢查：
+
+1. **確認 Secrets 已正確填入**：回到 **Settings > Secrets > Actions**，檢查三個變數是否存在（內容在花糶展示，不会掲露）。
+2. **確認 Apps Script 部署版本是最新的**：回到 Apps Script，點選「部署 > 管理部署作業」，確認您使用的網址對應的是最新版本。
+3. **確認存取權限設為「所有人 (Anyone)」**：若設為「已登入 Google 帳戶的人」，則游戲結局畫面將無法存取。
